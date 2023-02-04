@@ -17,27 +17,29 @@ class AE(nn.Module):
             ))
             in_ = out_
             out_ = out_//2
-            if out_ == 0:
+            if out_ <= 4:
                 break
         
             
         self.middle_rapp = nn.Linear(
                 in_features=in_, out_features=in_
             )
-
+        
+        out_ = in_*2
         for i in range(0,kwargs["deep"]):
-            in_ = in_*2
-            if in_ >= kwargs["input_shape"]:
-                in_ = kwargs["input_shape"]
+            if out_ >= kwargs["input_shape"]:
+                out_ = kwargs["input_shape"]
             if i==kwargs["deep"] -1:
                 in_ = kwargs["input_shape"]
             
             self.decoder_layers.append(nn.Linear(
-                in_features=out_, out_features=in_
+                in_features=in_, out_features=out_
             ))
-            out_ = in_
-            if in_ >= kwargs["input_shape"]:
+            if out_ >= kwargs["input_shape"]:
                 break
+            in_ = out_
+            out_ = in_*2
+            
             
             
         
@@ -46,16 +48,16 @@ class AE(nn.Module):
         
 
     def forward(self, features):
-        for i in range(0,self.deep):
-            features = self.encoder_layers[i](features)
+        for layer in self.encoder_layers:
+            features = layer(features)
             features = nn.ReLU()(features)
         
         features = self.middle_rapp(features)
         features = nn.ReLU()(features)
         
-        for i in range(0,self.deep):
-            features = self.decoder_layers[i](features)
-            if i==self.deep:
+        for off,layer in enumerate(self.decoder_layers):
+            features = layer(features)
+            if off==len(self.decoder_layers)-1:
                 features = self.last(features)
             else:
                 features = nn.ReLU()(features)
