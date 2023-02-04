@@ -29,8 +29,6 @@ class AE(nn.Module):
         for i in range(0,kwargs["deep"]):
             if out_ >= kwargs["input_shape"]:
                 out_ = kwargs["input_shape"]
-            if i==kwargs["deep"] -1:
-                in_ = kwargs["input_shape"]
             
             self.decoder_layers.append(nn.Linear(
                 in_features=in_, out_features=out_
