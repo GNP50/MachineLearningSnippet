@@ -1,11 +1,3 @@
-import numpy as np
-import torch
-from torch.utils.data import TensorDataset, DataLoader
-import torch.nn as nn
-import torch.nn.functional as F
-import torch.optim as optim
-
-
 class AE(nn.Module):
     def __init__(self, **kwargs):
         super().__init__()
@@ -25,22 +17,32 @@ class AE(nn.Module):
             ))
             in_ = out_
             out_ = out_//2
+            if out_ == 0:
+                break
+        
             
         self.middle_rapp = nn.Linear(
                 in_features=in_, out_features=in_
             )
 
         for i in range(0,kwargs["deep"]):
-            if i==kwargs["deep"]:
+            in_ = in_*2
+            if in_ >= kwargs["input_shape"]:
+                in_ = kwargs["input_shape"]
+            if i==kwargs["deep"] -1:
                 in_ = kwargs["input_shape"]
             
             self.decoder_layers.append(nn.Linear(
                 in_features=out_, out_features=in_
             ))
-            in_ = out_*2
             out_ = in_
+            if in_ >= kwargs["input_shape"]:
+                break
+            
+            
         
-        
+        self.decoder_layers = nn.ModuleList(self.decoder_layers)
+        self.encoder_layers = nn.ModuleList(self.encoder_layers)
         
 
     def forward(self, features):
